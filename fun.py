@@ -14,7 +14,7 @@ NK = 21
 NT = 5
 KMAX = 17
 TAGE = ('Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag')
-NITERS = 1000
+NITERS = 10000
 
 
 def generate(kinder):
