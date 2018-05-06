@@ -12,7 +12,7 @@ import itertools as itt
 Kind = namedtuple('Kind', 'vname nname code kprio kstreich lehrer stufe grobstufe')
 NK = 21
 NT = 5
-KMAX = 15
+KMAX = 17
 TAGE = ('Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag')
 NITERS = 1000
 
@@ -29,14 +29,17 @@ def generate(kinder):
 
 
     tage = [[set() for _ in range(NK)] for _ in range(NT)]
+    tidcs = list(range(len(tage)))
 
-    for _ in range(5):
+    for _ in range(NT):
         random.shuffle(klist)
         for code, possible in klist:
             for p in possible:
-                random.shuffle(tage)
                 zugeteilt = False
+                random.shuffle(tage)
                 for t in tage:
+                    if any(code in k for k in t):
+                        continue
                     kurs = t[p]
                     if len(kurs) >= KMAX:
                         continue
@@ -53,9 +56,10 @@ def generate(kinder):
 
             assert zugeteilt
 
-    random.shuffle(tage)
-
     zuteil = {k: [] for k in kinder}
+
+    for c, k in kinder.items():
+        assert c == k.code
 
     min_kg = KMAX+1
     for t, tname in zip(tage, TAGE):
@@ -68,6 +72,7 @@ def generate(kinder):
 
     for z in zuteil.values():
         assert len(set(z)) == len(z)
+        assert len(z) == NT
 
     min_np = 4
     for k in kinder.values():
@@ -79,6 +84,8 @@ def generate(kinder):
             assert np >= 2
         ns = sum(p in zt for p in k.kstreich)
         assert ns == 0
+        for zidx, z in enumerate(zt):
+            assert k.code in tage[zidx][z]
 
     return tage, zuteil, min_kg, min_np
 
@@ -130,9 +137,9 @@ def main():
     for _ in trange(NITERS):
         try:
             sol = generate(kinder)
-            sols.append(sol)
         except AssertionError:
-            pass
+            continue
+        sols.append(sol)
     print(f'{len(sols)} valid solutions computed')
 
     bs = sols[0]
