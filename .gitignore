@@ -1,0 +1,6 @@
+data.xlsx
+data.csv
+out
+.*.swp
+*.pyc
+.DS_Store
