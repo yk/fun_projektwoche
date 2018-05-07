@@ -14,7 +14,7 @@ NK = 21
 NT = 5
 KMAX = 17
 TAGE = ('Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag')
-NITERS = 10000
+NITERS = 50000
 
 
 def generate(kinder):
@@ -177,8 +177,11 @@ def main():
 
     sh.rm('-r', '-f', 'out')
     sh.mkdir('out')
+    sh.mkdir('out/lehrer')
+    sh.mkdir('out/schueler')
+    sh.mkdir('out/kurse')
     for kn in range(NK):
-        with open(f'out/Kurs {kn+1}.csv', 'w') as f:
+        with open(f'out/kurse/Kurs {kn+1}.csv', 'w') as f:
             f.write('Tag,Nachname,Vorname,Code,Lehrperson,Stufe\n')
             for t, tname in zip(tage, TAGE):
                 kurs = t[kn]
@@ -189,12 +192,17 @@ def main():
 
     
     keyfunc = lambda k: k.lehrer
+    title = 'Nachname,Vorname,Code,Montag,Dienstag,Mittwoch,Donnerstag,Freitag\n'
     for l, lg in itt.groupby(sorted(list(kinder.values()), key=keyfunc), keyfunc):
-        with open(f'out/LP {l}.csv', 'w') as f:
-            f.write('Nachname,Vorname,Code,Montag,Dienstag,Mittwoch,Donnerstag,Freitag\n')
+        sh.mkdir(f'out/schueler/{l}')
+        with open(f'out/lehrer/LP {l}.csv', 'w') as f:
+            f.write(title)
             for k in sorted(lg, key=lambda k: k.code):
                 line = ','.join([k.nname, k.vname, k.code] + list(str(z+1) for z in zuteil[k.code])) + '\n'
                 f.write(line)
+                with open(f'out/schueler/{l}/{k.code}.csv', 'w') as sf:
+                    sf.write(title)
+                    sf.write(line)
 
 
     # plt.show()
