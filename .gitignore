@@ -1,6 +1,7 @@
 data.xlsx
 data.csv
 out
+out_streich
 .*.swp
 *.pyc
 .DS_Store
