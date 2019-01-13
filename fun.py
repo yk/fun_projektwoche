@@ -20,8 +20,8 @@ NITERS = 50000
 def generate(kinder):
     klist = []
     for k in kinder.values():
-        kprio = list(k.kprio)
-        kother = list(set(range(NK)) - k.kprio - k.kstreich)
+        kprio = list(k.kprio - set([8]))
+        kother = list(set(range(NK)) - k.kprio - k.kstreich - set([8]))
 
         random.shuffle(kprio)
         random.shuffle(kother)
@@ -66,7 +66,10 @@ def generate(kinder):
         for kidx, k in enumerate(t):
             kg = len(k)
             assert kg <= KMAX
-            min_kg = min(kg, min_kg)
+            if kidx != 8:
+                min_kg = min(kg, min_kg)
+            else:
+                assert kg == 0
             for c in k:
                 zuteil[c].append(kidx)
 
@@ -87,7 +90,11 @@ def generate(kinder):
         for zidx, z in enumerate(zt):
             assert k.code in tage[zidx][z]
 
+    assert kinder[next(iter(tage[0][15]))].grobstufe == 'jung'
+    assert kinder[next(iter(tage[3][15]))].grobstufe == 'jung'
+
     return tage, zuteil, min_kg, min_np
+
 
 def main():
     anfang = True
@@ -106,7 +113,7 @@ def main():
                 continue
             if len(''.join(elements)) == 0:
                 continue
-            if ''.join(elements) == ''.join(map(str, range(1,22))):
+            if ''.join(map(str, range(1,22))) in ''.join(elements):
                 continue
 
             if elements[0] != '':
@@ -120,7 +127,7 @@ def main():
             kprio = set()
             kstreich = set()
 
-            for idx, e in enumerate(elements[5:]):
+            for idx, e in enumerate(elements[5:5+NK]):
                 if e == '0':
                     kstreich.add(idx)
                 elif e == '1':
@@ -154,7 +161,7 @@ def main():
     print(f'best solution has lowest number of prio: {min_np} and lowest ksize: {min_kg}')
 
     for t, tname in zip(tage, TAGE):
-        kgs = [len(k) for k in t]
+        kgs = [len(k) for kn, k in enumerate(t) if kn != 8]
         plt.figure()
         plt.hist(kgs, KMAX+1, (0, KMAX+1), align='left')
         plt.xticks(list(range(KMAX+1)))

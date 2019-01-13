@@ -30,10 +30,13 @@ def main():
     sh.rm('-r', '-f', 'out_streich')
     sh.mkdir('out_streich')
     sh.mkdir('out_streich/lehrer')
+    sh.mkdir('out_streich/lehrer_xlsx')
     sh.mkdir('out_streich/schueler')
+    sh.mkdir('out_streich/schueler_pdf')
     for fn in os.listdir('out/lehrer'):
         lehrer = fn[3:-4]
         sh.mkdir(f'out_streich/schueler/{lehrer}')
+        sh.mkdir(f'out_streich/schueler_pdf/{lehrer}')
         titleline = ''
         with open(f'out/lehrer/{fn}') as f, open(f'out_streich/lehrer/{fn}', 'w') as of:
             for line in f:
@@ -67,7 +70,43 @@ def main():
                             fline = True
                         else:
                             sof.write(','.join(parts) + '\n')
+        sh.unix2dos(f'out_streich/lehrer/{fn}')
+        sh.ssconvert(f'out_streich/lehrer/{fn}', f'out_streich/lehrer_xlsx/{fn[:-3]+"xlsx"}')
+
+        schuelers = [n[:-4] for n in os.listdir(f'out_streich/schueler/{lehrer}')]
+        for s in schuelers:
+            with open(f'out_streich/schueler/{lehrer}/{s}.csv') as sf:
+                sparts = sf.readlines()[1].strip().split(',')
+
+            with open(f'out_streich/schueler_pdf/{lehrer}/{s}.md', 'w') as sof:
+                sof.write('# Programm Projektwoche\n')
+                sof.write(f'### {sparts[1]} {sparts[0]} ({sparts[2]})\n')
+                sof.write(f'#### Lehrperson: {lehrer}\n')
+                sof.write('\n')
+                day_names = [
+                    'Montag, 18. Juni',
+                    'Dienstag, 19. Juni',
+                    'Mittwoch, 20. Juni',
+                    'Donnerstag, 21. Juni',
+                    'Freitag, 22. Juni',
+                ]
+                for spart, day_name in zip(sparts[3:], day_names):
+                    if spart:
+                        sof.write(f'- **{day_name}:** Kurs {spart}\n')
+                    else:
+                        sof.write(f'- **{day_name}:** (kein Kurs an diesem Tag)\n')
+                    if spart == '1':
+                        sof.write('\t- Für Kurs **1** ist die Besammlung **bereits um 08.00 Uhr bei der Bushaltestelle am Dorfplatz**.\n')
+                    elif spart == '3':
+                        sof.write('\t- Für Kurs **3** sollen die **Badesachen** mitgebracht werden. Wer hat, soll ausserdem Taucherbrille und Schnorchel mitnehmen.\n')
+                    elif spart == '11':
+                        sof.write('\t- Für Kurs **11** bitte **Sportkleidung** tragen. Wir sind in der Turnhalle und im Schulzimmer.\n')
+
+            sh.markdown_pdf('-o', f'out_streich/schueler_pdf/{lehrer}/{s}.pdf', f'out_streich/schueler_pdf/{lehrer}/{s}.md')
+            sh.rm(f'out_streich/schueler_pdf/{lehrer}/{s}.md')
+
     sh.mkdir('out_streich/kurse')
+    sh.mkdir('out_streich/kurse_xlsx')
     for fn in os.listdir('out/kurse'):
         with open(f'out/kurse/{fn}') as f, open(f'out_streich/kurse/{fn}', 'w') as of:
             for line in f:
@@ -81,6 +120,8 @@ def main():
                 if s[1] == kn:
                     sparts = ['Freitag'] + s[0]
                     of.write(','.join(sparts) + '\n')
+        sh.unix2dos(f'out_streich/kurse/{fn}')
+        sh.ssconvert(f'out_streich/kurse/{fn}', f'out_streich/kurse_xlsx/{fn[:-3]+"xlsx"}')
 
 
 
